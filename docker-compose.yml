@@ -1,0 +1,125 @@
+x-common-healthcheck: &common-healthcheck
+  interval: 10s
+  timeout: 5s
+  retries: 5
+
+x-common-volume: &common-volume
+  driver: local
+
+x-app-dev-environment: &app-dev-environment
+  ENVIRONMENT: ${ENVIRONMENT:-dev}
+  LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
+  DEBUG: ${DEBUG:-true}
+  POSTGRES_USER: ${POSTGRES_USER:-postgres}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  POSTGRES_SERVER: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: ${POSTGRES_DB:-gtree_db}
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: gtree-postgres-dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gtree_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-gtree_db}",
+        ]
+      <<: *common-healthcheck
+    networks:
+      - gtree-network-dev
+    restart: unless-stopped
+
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: gtree-app-dev
+    environment:
+      <<: *app-dev-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8008:8000"
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./src/gtree/infrastructure/db/migrations:/app/src/gtree/infrastructure/db/migrations
+      - ./alembic.ini:/app/alembic.ini
+      - app-logs-dev:/app/logs
+      - ./.certs:/app/.certs:ro
+    networks:
+      - gtree-network-dev
+    command:
+      [
+        "poetry",
+        "run",
+        "uvicorn",
+        "gtree.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+      ]
+
+  migrate-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: gtree-migrate
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./scripts:/app/scripts:ro
+    command: ["bash", "/app/scripts/migrate.sh"]
+    networks:
+      - gtree-network-dev
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: gtree-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin-data-dev:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-8080}:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gtree-network-dev
+    restart: unless-stopped
+
+volumes:
+  postgres-data-dev:
+    <<: *common-volume
+  pgadmin-data-dev:
+    <<: *common-volume
+  app-logs-dev:
+    <<: *common-volume
+
+networks:
+  gtree-network-dev:
+    name: gtree-network-dev
+    driver: bridge
