@@ -104,16 +104,3 @@ make dev-setup
 # Run CI pipeline
 make ci
 ```
-
-## Pre-commit hooks
-
-```bash
-# Install pre-commit hooks
-pre-commit install
-
-# Run hooks on all files
-pre-commit run --all-files
-
-# Update hooks
-pre-commit autoupdate
-```

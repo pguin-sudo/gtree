@@ -20,7 +20,7 @@ class TreeRepository(RepositoryObjectBase):
         try:
             db_obj = TreeMapper.entity_to_model(tree)
             self.db.add(db_obj)
-            await self.db.commit()
+            await self.db.flush()
             await self.db.refresh(db_obj)
             return TreeMapper.model_to_entity(db_obj)
         except SQLAlchemyError as e:

@@ -15,7 +15,7 @@ class TreeAccessRepository(RepositoryObjectBase):
         try:
             db_obj = TreeAccessMapper.entity_to_model(user)
             self.db.add(db_obj)
-            await self.db.commit()
+            await self.db.flush()
             await self.db.refresh(db_obj)
             return TreeAccessMapper.model_to_entity(db_obj)
         except SQLAlchemyError as e:

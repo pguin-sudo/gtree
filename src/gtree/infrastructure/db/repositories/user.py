@@ -17,7 +17,7 @@ class UserRepository(RepositoryObjectBase):
         try:
             db_obj = UserMapper.entity_to_model(user)
             self.db.add(db_obj)
-            await self.db.commit()
+            await self.db.flush()
             await self.db.refresh(db_obj)
             return UserMapper.model_to_entity(db_obj)
         except SQLAlchemyError as e:
@@ -99,7 +99,7 @@ class UserRepository(RepositoryObjectBase):
                     if new_value is not None:
                         setattr(db_obj, field_name, new_value)
 
-            await self.db.commit()
+            await self.db.flush()
             await self.db.refresh(db_obj)
 
             return UserMapper.model_to_entity(db_obj)

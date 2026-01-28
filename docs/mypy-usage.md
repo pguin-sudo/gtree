@@ -80,18 +80,3 @@ module = [
 ]
 ignore_missing_imports = true
 ```
-
-## Pre-commit integration
-
-MyPy is automatically run on commit via pre-commit hooks:
-
-```bash
-# Install pre-commit hooks
-pre-commit install
-
-# Run hooks on all files
-pre-commit run --all-files
-
-# Run only mypy
-pre-commit run mypy
-```
