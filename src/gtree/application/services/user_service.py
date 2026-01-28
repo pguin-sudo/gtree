@@ -1,7 +1,7 @@
 from datetime import timedelta
 from uuid import UUID
 
-from gtree.application.exceptions import (
+from gtree.application.exceptions.user import (
     InvalidCredentialsException,
     InvalidTokenException,
     UserInactiveException,

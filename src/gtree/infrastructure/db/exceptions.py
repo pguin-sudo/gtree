@@ -1,22 +1,21 @@
 class RepositoryException(Exception):
     """Base class for all repository Exceptions."""
 
+    def __init__(self, message: str, status_code: int = 500):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(self.message)
+
 
 class NotFoundException(RepositoryException):
     """Exception raised when a resource is not found."""
 
-
-class DuplicateException(RepositoryException):
-    """Exception raised when a duplicate resource is found."""
-
-
-class AlreadyExistsException(RepositoryException):
-    """Exception raised when a resource already exists."""
+    def __init__(self, message: str, status_code: int = 404):
+        super().__init__(message, status_code)
 
 
 class ConflictException(RepositoryException):
     """Exception raised when a conflict occurs during a repository operation."""
 
-
-class SaveException(RepositoryException):
-    """Exception raised when a resource fails to save."""
+    def __init__(self, message: str, status_code: int = 401):
+        super().__init__(message, status_code)

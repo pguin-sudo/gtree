@@ -1,4 +1,4 @@
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import exc
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from gtree.domain.entities.trees.tree_access import TreeAccessEntity
@@ -18,5 +18,5 @@ class TreeAccessRepository(RepositoryObjectBase):
             await self.db.flush()
             await self.db.refresh(db_obj)
             return TreeAccessMapper.model_to_entity(db_obj)
-        except SQLAlchemyError as e:
+        except exc.SQLAlchemyError as e:
             raise ConflictException(f"Error creating tree access: {str(e)}") from e

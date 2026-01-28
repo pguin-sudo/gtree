@@ -1,5 +1,5 @@
-class DomainException(Exception):
-    """Raised when a domain error occurs."""
+class ApplicationException(Exception):
+    """Base exception for our application"""
 
     def __init__(self, message: str, status_code: int = 500):
         self.message = message

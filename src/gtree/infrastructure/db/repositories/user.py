@@ -1,9 +1,12 @@
-from sqlalchemy import exists, select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import exc, exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from gtree.domain.entities.user import UserEntity
-from gtree.infrastructure.db.exceptions import ConflictException, NotFoundException
+from gtree.infrastructure.db.exceptions import (
+    ConflictException,
+    NotFoundException,
+    RepositoryException,
+)
 from gtree.infrastructure.db.mappers.user import UserMapper
 from gtree.infrastructure.db.models.user import UserModel
 from gtree.infrastructure.db.repositories.base import RepositoryObjectBase
@@ -20,7 +23,7 @@ class UserRepository(RepositoryObjectBase):
             await self.db.flush()
             await self.db.refresh(db_obj)
             return UserMapper.model_to_entity(db_obj)
-        except SQLAlchemyError as e:
+        except exc.SQLAlchemyError as e:
             raise ConflictException(f"Error creating user: {str(e)}") from e
 
     async def get_by_id(self, user_id) -> UserEntity:
@@ -30,8 +33,8 @@ class UserRepository(RepositoryObjectBase):
             if not db_obj:
                 raise NotFoundException(f"User with id {user_id} not found")
             return UserMapper.model_to_entity(db_obj)
-        except SQLAlchemyError as e:
-            raise ConflictException(
+        except exc.SQLAlchemyError as e:
+            raise RepositoryException(
                 f"Error retrieving user by id {id}: {str(e)}"
             ) from e
 
@@ -43,8 +46,8 @@ class UserRepository(RepositoryObjectBase):
             if db_obj is None:
                 return None
             return UserMapper.model_to_entity(db_obj)
-        except SQLAlchemyError as e:
-            raise ConflictException(
+        except exc.SQLAlchemyError as e:
+            raise RepositoryException(
                 f"Error retrieving user by email {email}: {str(e)}"
             ) from e
 
@@ -56,8 +59,8 @@ class UserRepository(RepositoryObjectBase):
             if db_obj is None:
                 return None
             return UserMapper.model_to_entity(db_obj)
-        except SQLAlchemyError as e:
-            raise ConflictException(
+        except exc.SQLAlchemyError as e:
+            raise RepositoryException(
                 f"Error retrieving user by username {username}: {str(e)}"
             ) from e
 
@@ -67,8 +70,10 @@ class UserRepository(RepositoryObjectBase):
             stmt = select(exists().where(UserModel.email == email))
             result = await self.db.scalar(stmt)
             return False if result is None else result
-        except SQLAlchemyError as e:
-            raise ConflictException(f"Error checking email existence: {str(e)}") from e
+        except exc.SQLAlchemyError as e:
+            raise RepositoryException(
+                f"Error checking email existence: {str(e)}"
+            ) from e
 
     async def update(self, user_entity: UserEntity) -> UserEntity:
         """Update an existing user with data from UserEntity.
@@ -104,8 +109,7 @@ class UserRepository(RepositoryObjectBase):
 
             return UserMapper.model_to_entity(db_obj)
 
-        except SQLAlchemyError as e:
-            await self.db.rollback()
+        except exc.SQLAlchemyError as e:
             raise ConflictException(
                 f"Error updating user with id {user_entity.id}: {str(e)}"
             ) from e
