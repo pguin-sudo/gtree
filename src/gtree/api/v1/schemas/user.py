@@ -5,7 +5,7 @@ from gtree.api.v1.schemas.base import BaseSchema
 
 
 @final
-class TokenSchema(BaseSchema):
+class TokenResponseSchema(BaseSchema):
     """Schema for JWT token data"""
 
     access_token: str
@@ -14,7 +14,7 @@ class TokenSchema(BaseSchema):
 
 
 @final
-class UserSchema(BaseSchema):
+class UserResponseSchema(BaseSchema):
     """Schema with basic user data"""
 
     id: UUID

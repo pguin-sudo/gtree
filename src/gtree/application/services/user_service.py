@@ -1,8 +1,6 @@
 from datetime import timedelta
 from uuid import UUID
 
-from fastapi.security import OAuth2PasswordBearer
-
 from gtree.application.exceptions import (
     InvalidCredentialsException,
     InvalidTokenException,
@@ -11,8 +9,6 @@ from gtree.application.exceptions import (
 from gtree.domain.entities.user import TokenEntity, UserEntity
 from gtree.infrastructure.db.repositories.user import UserRepository
 from gtree.infrastructure.utils import auth as auth_utils
-
-oauth2_schema = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 class UserService:
@@ -31,13 +27,10 @@ class UserService:
 
     async def register(self, username: str, password: str, email: str) -> TokenEntity:
         hashed_password = auth_utils.hash_password(password)
-        user = await self.user_repository.create(
-            create_data={
-                "username": username,
-                "email": email,
-                "password_hash": hashed_password,
-            }
+        created_user = UserEntity.create_user(
+            username=username, email=email, password_hash=hashed_password
         )
+        user = await self.user_repository.create(created_user)
         jwt_payload = {
             "sub": str(user.id),
             "email": user.email,
@@ -51,7 +44,8 @@ class UserService:
 
     async def login(self, username: str, password: str) -> TokenEntity:
         user: UserEntity = await self.validate_auth_user(username, password)
-        _ = await self.user_repository.update_last_login(user_id=user.id)
+        user.update_last_login()
+        _ = await self.user_repository.update(user)
         jwt_payload = {
             "sub": str(user.id),
             "email": user.email,
@@ -69,7 +63,7 @@ class UserService:
             sub: str | None = payload.get("sub")
             if sub is not None:
                 user_id = UUID(sub)
-                if user := await self.user_repository.get(user_id):
+                if user := await self.user_repository.get_by_id(user_id):
                     return user
         except (ValueError, auth_utils.InvalidTokenError):
             pass

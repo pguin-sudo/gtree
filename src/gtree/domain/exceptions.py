@@ -8,3 +8,8 @@ class DomainException(Exception):
 @final
 class InvalidGenderException(DomainException):
     """Raised when an invalid gender is provided."""
+
+
+@final
+class InvalidTreeAccessLevelException(DomainException):
+    """Raised when an invalid gender is provided."""

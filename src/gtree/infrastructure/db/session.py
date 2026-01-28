@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import (
 from gtree.core.config.settings import settings
 
 
-def create_engine(url: str, is_echo: bool = True) -> AsyncEngine:
+def create_engine(url: str, is_echo: bool = False) -> AsyncEngine:
     """Creates an asynchronous SQLAlchemy engine.
 
     Args:

@@ -12,10 +12,6 @@ class BaseModel(DeclarativeBase):
 
     __abstract__ = True
 
-    @classmethod
-    def from_entity(cls, entity):
-        raise NotImplementedError("Subclasses must implement this method")
-
 
 class ObjectBaseModel(BaseModel):
     """Base class for all models with common fields and methods."""

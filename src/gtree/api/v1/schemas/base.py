@@ -11,9 +11,6 @@ class BaseSchema(BaseModel):
     Note: This schema does NOT perform business validation.
     """
 
-    def to_entity(self) -> BaseEntity:
-        raise NotImplementedError("to_entity method implemented by subclasses")
-
     @classmethod
     def from_entity(cls, entity: BaseEntity) -> Self:
         """Converts an entity to a schema.
@@ -24,4 +21,4 @@ class BaseSchema(BaseModel):
         Returns:
             The schema.
         """
-        return cls(**entity.__dict__)
+        return cls(**entity.model_dump())
