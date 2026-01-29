@@ -78,12 +78,6 @@ class UserRepository(RepositoryObjectBase):
     async def update(self, user_entity: UserEntity) -> UserEntity:
         """Update an existing user with data from UserEntity.
 
-        Args:
-            user_entity: The UserEntity containing updated data
-
-        Returns:
-            The updated UserEntity
-
         Raises:
             NotFoundException: If user with the given ID doesn't exist
             ConflictException: If there's a database error during update

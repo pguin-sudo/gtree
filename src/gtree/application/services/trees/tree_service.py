@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from gtree.application.authorization.tree_access import access_to_tree
 from gtree.domain.entities._value_objects.tree_access_level import TreeAccessLevel
 from gtree.domain.entities.trees.tree import TreeEntity
 from gtree.domain.entities.trees.tree_access import TreeAccessEntity
@@ -21,7 +22,9 @@ class TreeService:
             user_id, TreeAccessLevel.OWNER
         )
 
-    async def get_tree_by_id(self, tree_id: UUID, user_id: UUID) -> TreeEntity: ...
+    @access_to_tree(TreeAccessLevel.OWNER)
+    async def get_tree_by_id(self, tree_id: UUID, user_id: UUID) -> TreeEntity:  # noqa: ARG002
+        return await self.tree_repository.get_by_id(tree_id)
 
     async def get_full_tree(self, tree_id: UUID, user_id: UUID) -> TreeEntity: ...
 
@@ -36,13 +39,21 @@ class TreeService:
         _ = await self.tree_access_repository.create(tree_access)
         return tree
 
+    @access_to_tree(TreeAccessLevel.OWNER)
     async def update_tree(
         self,
         tree_id: UUID,
-        user_id: UUID,
+        user_id: UUID,  # noqa: ARG002
         name: str | None = None,
         description: str | None = None,
-    ) -> TreeEntity: ...
+    ) -> TreeEntity:
+        tree = await self.tree_repository.get_by_id(tree_id)
+        if name is not None:
+            tree.name = name
+        if description is not None:
+            tree.description = description
+        await self.tree_repository.update(tree)
+        return tree
 
     async def delete_tree(self, tree_id: UUID, user_id: UUID) -> None: ...
 

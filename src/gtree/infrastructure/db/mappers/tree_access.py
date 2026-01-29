@@ -9,8 +9,18 @@ class TreeAccessMapper:
             user_id=entity.user_id,
             tree_id=entity.tree_id,
             access_level=entity.access_level,
+            created_at=entity.created_at,
+            updated_at=entity.updated_at,
+            is_active=entity.is_active,
         )
 
     @classmethod
-    def model_to_entity(cls, entity: TreeAccessModel) -> TreeAccessEntity:
-        return TreeAccessEntity.model_validate(entity)
+    def model_to_entity(cls, model: TreeAccessModel) -> TreeAccessEntity:
+        return TreeAccessEntity(
+            user_id=model.user_id,
+            tree_id=model.tree_id,
+            access_level=model.access_level,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+            is_active=model.is_active,
+        )

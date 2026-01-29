@@ -1,34 +1,30 @@
+from dataclasses import dataclass, field
 from datetime import datetime
 import uuid
-
-from pydantic import BaseModel, ConfigDict, Field
 
 from gtree.domain.funcs.time import get_current_time
 
 
-class BaseEntity(BaseModel):
+@dataclass(kw_only=True, slots=True)
+class BaseEntity:
     """Base entity with common fields and methods."""
 
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        validate_assignment=True,
-        str_strip_whitespace=True,
-        from_attributes=True,
-    )
-    created_at: datetime = Field(default_factory=get_current_time)
-    updated_at: datetime = Field(default_factory=get_current_time)
-    is_active: bool = Field(default=True)
+    created_at: datetime = field(default_factory=get_current_time)
+    updated_at: datetime = field(default_factory=get_current_time)
+    is_active: bool = field(default=True)
 
 
+@dataclass(kw_only=True, slots=True)
 class ObjectBaseEntity(BaseEntity):
     """Base class for object entities."""
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
 
     def __hash__(self) -> int:
         return hash(self.id)
 
 
+@dataclass(kw_only=True, slots=True)
 class AssociationBaseEntity(BaseEntity):
     """Base class for associative entities.
 

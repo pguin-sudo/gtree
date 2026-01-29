@@ -19,5 +19,16 @@ class UserMapper:
         )
 
     @classmethod
-    def model_to_entity(cls, entity: UserModel) -> UserEntity:
-        return UserEntity.model_validate(entity)
+    def model_to_entity(cls, model: UserModel) -> UserEntity:
+        return UserEntity(
+            id=model.id,
+            username=model.username,
+            email=model.email,
+            password_hash=model.password_hash,
+            is_verified=model.is_verified,
+            last_login=model.last_login,
+            last_password_change=model.last_password_change,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+            is_active=model.is_active,
+        )
