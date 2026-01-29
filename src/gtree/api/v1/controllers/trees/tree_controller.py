@@ -10,6 +10,7 @@ from gtree.api.v1.schemas.trees.tree import (
     TreeUpdateRequestSchema,
 )
 from gtree.application.services.trees.tree_service import TreeService
+from gtree.domain.entities._value_objects.tree_access_level import TreeAccessLevel
 from gtree.domain.entities.user import UserEntity
 
 router = APIRouter(
@@ -82,7 +83,7 @@ async def delete_tree(
     service: TreeService = Depends(get_tree_service),
 ) -> None:
     """Delete a tree (only owner)"""
-    await service.delete_tree(tree_id, user.id)
+    await service.delete_tree(tree_id=tree_id, user_id=user.id)
 
 
 @router.get("/{tree_id}/full", response_model=TreeFullResponseSchema)
@@ -97,10 +98,15 @@ async def get_full_tree(
 async def share_tree_access(
     tree_id: UUID,
     target_user_id: UUID,
-    access_level: str = "viewer",
+    access_level: TreeAccessLevel,
     user: UserEntity = Depends(get_current_active_user),
     service: TreeService = Depends(get_tree_service),
 ) -> dict[str, str]:
     """Share access to a tree (only owner)"""
-    _ = await service.share_access(tree_id, user.id, target_user_id, access_level)
+    _ = await service.share_access(
+        tree_id=tree_id,
+        user_id=user.id,
+        target_user_id=target_user_id,
+        access_level=access_level,
+    )
     return {"message": "Access granted"}

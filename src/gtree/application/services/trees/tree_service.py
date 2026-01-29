@@ -22,7 +22,7 @@ class TreeService:
             user_id, TreeAccessLevel.OWNER
         )
 
-    @access_to_tree(TreeAccessLevel.OWNER)
+    @access_to_tree(TreeAccessLevel.VIEWER)
     async def get_tree_by_id(self, tree_id: UUID, user_id: UUID) -> TreeEntity:  # noqa: ARG002
         return await self.tree_repository.get_by_id(tree_id)
 
@@ -55,12 +55,19 @@ class TreeService:
         await self.tree_repository.update(tree)
         return tree
 
-    async def delete_tree(self, tree_id: UUID, user_id: UUID) -> None: ...
+    @access_to_tree(TreeAccessLevel.OWNER)
+    async def delete_tree(self, tree_id: UUID, user_id: UUID) -> None:  # noqa: ARG002
+        await self.tree_repository.delete(tree_id)
 
+    @access_to_tree(TreeAccessLevel.OWNER)
     async def share_access(
         self,
         tree_id: UUID,
-        owner_id: UUID,
+        user_id: UUID,  # noqa: ARG002
         target_user_id: UUID,
         access_level: str,
-    ) -> None: ...
+    ) -> None:
+        tree_access = TreeAccessEntity.create_tree_access(
+            target_user_id, tree_id, access_level
+        )
+        _ = await self.tree_access_repository.upsert(tree_access)

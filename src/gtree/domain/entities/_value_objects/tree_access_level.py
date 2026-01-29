@@ -26,9 +26,11 @@ class TreeAccessLevel(StrEnum):
         return self.rank < other.rank
 
     @classmethod
-    def from_string(cls, value: str) -> "TreeAccessLevel":
+    def from_string(cls, value: str | None) -> "TreeAccessLevel":
         """Create TreeAccessLevel from string."""
         try:
+            if value is None:
+                return cls.NOTHING
             return cls(value.lower())
         except ValueError as e:
             valid_values = [level.value for level in cls]

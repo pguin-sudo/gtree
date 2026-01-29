@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import exc, select
+from sqlalchemy import delete, exc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from gtree.domain.entities._value_objects.tree_access_level import TreeAccessLevel
@@ -93,4 +93,15 @@ class TreeRepository(RepositoryObjectBase):
         except exc.SQLAlchemyError as e:
             raise ConflictException(
                 f"Error updating tree with id {tree_entity.id}: {str(e)}"
+            ) from e
+
+    async def delete(self, tree_id: UUID) -> None:
+        try:
+            stmt = delete(TreeModel).where(TreeModel.id == tree_id)
+            await self.db.execute(stmt)
+            await self.db.flush()
+
+        except exc.SQLAlchemyError as e:
+            raise ConflictException(
+                f"Error deleting tree with id {tree_id}: {str(e)}"
             ) from e
