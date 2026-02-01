@@ -30,7 +30,7 @@ class UserRepository(RepositoryObjectBase):
         try:
             stmt = select(UserModel).where(UserModel.id == user_id)
             db_obj = await self.db.scalar(stmt)
-            if not db_obj:
+            if db_obj is None:
                 raise NotFoundException(f"User with id {user_id} not found")
             return UserMapper.model_to_entity(db_obj)
         except exc.SQLAlchemyError as e:
@@ -38,26 +38,26 @@ class UserRepository(RepositoryObjectBase):
                 f"Error retrieving user by id {id}: {str(e)}"
             ) from e
 
-    async def get_by_email(self, email: str) -> UserEntity | None:
+    async def get_by_email(self, email: str) -> UserEntity:
         """Get user by email address."""
         try:
             stmt = select(UserModel).where(UserModel.email == email)
             db_obj = await self.db.scalar(stmt)
             if db_obj is None:
-                return None
+                raise NotFoundException(f"User with email {email} not found")
             return UserMapper.model_to_entity(db_obj)
         except exc.SQLAlchemyError as e:
             raise RepositoryException(
                 f"Error retrieving user by email {email}: {str(e)}"
             ) from e
 
-    async def get_by_username(self, username: str) -> UserEntity | None:
+    async def get_by_username(self, username: str) -> UserEntity:
         """Get user by username."""
         try:
             stmt = select(UserModel).where(UserModel.username == username)
             db_obj = await self.db.scalar(stmt)
             if db_obj is None:
-                return None
+                raise NotFoundException(f"User with username {username} not found")
             return UserMapper.model_to_entity(db_obj)
         except exc.SQLAlchemyError as e:
             raise RepositoryException(
@@ -86,7 +86,7 @@ class UserRepository(RepositoryObjectBase):
             stmt = select(UserModel).where(UserModel.id == user_entity.id)
             db_obj = await self.db.scalar(stmt)
 
-            if not db_obj:
+            if db_obj is None:
                 raise NotFoundException(f"User with id {user_entity.id} not found")
 
             updated_model = UserMapper.entity_to_model(user_entity)

@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, status
 from gtree.api.v1.dependencies import get_current_active_user, get_tree_service
 from gtree.api.v1.schemas.trees.tree import (
     TreeCreateRequestSchema,
-    TreeFullResponseSchema,
     TreeResponseSchema,
     TreeUpdateRequestSchema,
 )
@@ -84,14 +83,6 @@ async def delete_tree(
 ) -> None:
     """Delete a tree (only owner)"""
     await service.delete_tree(tree_id=tree_id, user_id=user.id)
-
-
-@router.get("/{tree_id}/full", response_model=TreeFullResponseSchema)
-async def get_full_tree(
-    tree_id: UUID,
-    user: UserEntity = Depends(get_current_active_user),
-    service: TreeService = Depends(get_tree_service),
-) -> TreeFullResponseSchema: ...
 
 
 @router.post("/{tree_id}/share", status_code=status.HTTP_201_CREATED)

@@ -2,8 +2,6 @@ from typing import final
 
 from gtree.application.exceptions.base import ApplicationException
 
-# User
-
 
 @final
 class UserInactiveException(ApplicationException):

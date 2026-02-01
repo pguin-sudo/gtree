@@ -1,0 +1,82 @@
+from uuid import UUID
+
+from gtree.api.v1.schemas.trees.individual import (
+    IndividualCreateRequestSchema,
+    IndividualUpdateRequestSchema,
+)
+from gtree.application.authorization.tree_access import access_to_tree
+from gtree.application.exceptions.individual import UnknownIndividualForTreeException
+from gtree.domain.entities._value_objects.tree_access_level import TreeAccessLevel
+from gtree.domain.entities.trees.individual import IndividualEntity
+from gtree.infrastructure.db.repositories.trees.individual import IndividualRepository
+from gtree.infrastructure.db.repositories.trees.tree_access import TreeAccessRepository
+
+
+class IndividualService:
+    def __init__(
+        self,
+        individual_repository: IndividualRepository,
+        tree_access_repository: TreeAccessRepository,
+    ):
+        self.tree_access_repository = tree_access_repository
+        self.individual_repository = individual_repository
+
+    @access_to_tree(TreeAccessLevel.VIEWER)
+    async def get_individuals_for_tree(
+        self,
+        user_id: UUID,  # noqa: ARG002
+        tree_id: UUID,
+    ) -> list[IndividualEntity]:
+        return await self.individual_repository.get_by_tree_id(tree_id)
+
+    @access_to_tree(TreeAccessLevel.VIEWER)
+    async def get_individual_by_id(
+        self,
+        user_id: UUID,  # noqa: ARG002
+        tree_id: UUID,
+        individual_id: UUID,
+    ) -> IndividualEntity:
+        individual = await self.individual_repository.get_by_id(individual_id)
+        if individual.tree_id != tree_id:
+            raise UnknownIndividualForTreeException
+        return individual
+
+    @access_to_tree(TreeAccessLevel.EDITOR)
+    async def create_individual(
+        self,
+        user_id: UUID,  # noqa: ARG002
+        tree_id: UUID,
+        # TODO: Remove schema from service
+        individual_schema: IndividualCreateRequestSchema,
+    ) -> IndividualEntity:
+        individual = IndividualEntity.create_individual(
+            tree_id=tree_id, **individual_schema.model_dump()
+        )
+        return await self.individual_repository.create(individual)
+
+    @access_to_tree(TreeAccessLevel.EDITOR)
+    async def update_individual(
+        self,
+        user_id: UUID,  # noqa: ARG002
+        tree_id: UUID,
+        individual_id: UUID,
+        # TODO: Remove schema from service
+        individual_schema: IndividualUpdateRequestSchema,
+    ) -> IndividualEntity:
+        individual = await self.individual_repository.get_by_id(individual_id)
+        if individual.tree_id != tree_id:
+            raise UnknownIndividualForTreeException
+        individual.update_individual(**individual_schema.model_dump())
+        return await self.individual_repository.update(individual)
+
+    @access_to_tree(TreeAccessLevel.EDITOR)
+    async def delete_individual(
+        self,
+        user_id: UUID,  # noqa: ARG002
+        tree_id: UUID,
+        individual_id: UUID,
+    ) -> None:
+        individual = await self.individual_repository.get_by_id(individual_id)
+        if individual.tree_id != tree_id:
+            raise UnknownIndividualForTreeException
+        return await self.individual_repository.delete(individual_id)

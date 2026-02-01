@@ -36,3 +36,17 @@ class TreeEntity(ObjectBaseEntity):
             )
         except DomainValidationException:
             raise
+
+    def update_tree(
+        self,
+        name: str | None = None,
+        description: str | None = None,
+    ) -> "TreeEntity":
+        """Update a new tree entity."""
+        try:
+            self.name = name or self.name
+            self.description = description or self.description
+            self.__post_init__()
+            return self
+        except DomainValidationException:
+            raise

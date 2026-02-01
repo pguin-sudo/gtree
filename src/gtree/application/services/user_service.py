@@ -9,6 +9,7 @@ from gtree.application.exceptions.user import (
     UserInactiveException,
 )
 from gtree.domain.entities.user import TokenEntity, UserEntity
+from gtree.infrastructure.db.exceptions import NotFoundException
 from gtree.infrastructure.db.repositories.user import UserRepository
 from gtree.infrastructure.utils import auth as auth_utils
 
@@ -18,9 +19,10 @@ class UserService:
         self.user_repository = user_repository
 
     async def validate_auth_user(self, username: str, password: str) -> UserEntity:
-        user = await self.user_repository.get_by_username(username)
-        if not user:
-            raise InvalidCredentialsException("Invalid email or password")
+        try:
+            user = await self.user_repository.get_by_username(username)
+        except NotFoundException as e:
+            raise InvalidCredentialsException("Invalid email or password") from e
         if not auth_utils.verify_password(password, user.password_hash):
             raise InvalidCredentialsException("Invalid email or password")
         if not user.is_active:

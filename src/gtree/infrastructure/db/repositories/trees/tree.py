@@ -56,6 +56,8 @@ class TreeRepository(RepositoryObjectBase):
                 TreeModel.id == tree_id,
             )
             tree = await self.db.scalar(stmt)
+            if tree is None:
+                raise NotFoundException(f"Tree with id {tree_id} not found")
             return TreeMapper.model_to_entity(tree)
         except exc.SQLAlchemyError as e:
             raise RepositoryException(
@@ -73,7 +75,7 @@ class TreeRepository(RepositoryObjectBase):
             stmt = select(TreeModel).where(TreeModel.id == tree_entity.id)
             db_obj = await self.db.scalar(stmt)
 
-            if not db_obj:
+            if db_obj is None:
                 raise NotFoundException(f"Tree with id {tree_entity.id} not found")
 
             updated_model = TreeMapper.entity_to_model(tree_entity)

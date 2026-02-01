@@ -8,20 +8,20 @@ from gtree.domain.entities.trees.tree import TreeEntity
 @final
 class TreeCreateRequestSchema(BaseSchema):
     name: str
-    description: str
+    description: str | None = None
 
 
 @final
 class TreeUpdateRequestSchema(BaseSchema):
-    name: str | None
-    description: str | None
+    name: str | None = None
+    description: str | None = None
 
 
 @final
 class TreeResponseSchema(BaseSchema):
     id: UUID
     name: str
-    description: str
+    description: str | None = None
 
     @classmethod
     def from_entity(cls, entity: TreeEntity) -> "TreeResponseSchema":
@@ -30,7 +30,3 @@ class TreeResponseSchema(BaseSchema):
             name=entity.name,
             description=entity.description,
         )
-
-
-@final
-class TreeFullResponseSchema(BaseSchema): ...

@@ -61,6 +61,7 @@ class UserEntity(ObjectBaseEntity):
 
     def update_last_login(self):
         self.last_login = get_current_time()
+        self.__post_init__()
 
     def __repr__(self) -> str:
         return f"<UserEntity(id='{self.id}', email='{self.email}'>"

@@ -63,7 +63,7 @@ class TreeAccessRepository(RepositoryObjectBase):
             ) from e
 
     async def has_minimum_access_level(
-        self, tree_id: UUID, user_id: UUID, min_access_level: TreeAccessLevel
+        self, user_id: UUID, tree_id: UUID, min_access_level: TreeAccessLevel
     ) -> bool:
         """Checks if the user has at least the specified minimum access level."""
         try:
@@ -73,7 +73,7 @@ class TreeAccessRepository(RepositoryObjectBase):
             user_access_level = await self.db.scalar(stmt)
 
             user_level = TreeAccessLevel.from_string(user_access_level)
-            return user_level >= min_access_level
+            return user_level.rank >= min_access_level.rank
 
         except exc.SQLAlchemyError as e:
             raise RepositoryException(
