@@ -1,9 +1,8 @@
 from uuid import UUID
 
-from fastapi import Body
+from fastapi import Body, status
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
-from starlette import status
 
 from gtree.api.v1.dependencies import get_current_active_user, get_individual_service
 from gtree.api.v1.schemas.trees.individual import (

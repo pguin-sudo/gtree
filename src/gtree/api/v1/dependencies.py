@@ -6,7 +6,13 @@ from gtree.application.services.trees.individual_service import IndividualServic
 from gtree.application.services.trees.tree_service import TreeService
 from gtree.application.services.user_service import UserService
 from gtree.domain.entities.user import UserEntity
+from gtree.infrastructure.db.repositories.trees.blood_relation import (
+    BloodRelationRepository,
+)
 from gtree.infrastructure.db.repositories.trees.individual import IndividualRepository
+from gtree.infrastructure.db.repositories.trees.marriage import (
+    MarriageRepository,
+)
 from gtree.infrastructure.db.repositories.trees.tree import TreeRepository
 from gtree.infrastructure.db.repositories.trees.tree_access import TreeAccessRepository
 from gtree.infrastructure.db.repositories.user import UserRepository
@@ -26,6 +32,18 @@ def get_tree_service(db: AsyncSession = Depends(get_db)) -> TreeService:
 
 def get_individual_service(db: AsyncSession = Depends(get_db)) -> IndividualService:
     return IndividualService(IndividualRepository(db), TreeAccessRepository(db))
+
+
+def get_blood_relation_service(db: AsyncSession = Depends(get_db)) -> IndividualService:
+    return BloodRelationService(
+        BloodRelationRepository(db), IndividualRepository(db), TreeAccessRepository(db)
+    )
+
+
+def get_marriage_service(db: AsyncSession = Depends(get_db)) -> IndividualService:
+    return MarriageService(
+        MarriageRepository(db), IndividualRepository(db), TreeAccessRepository(db)
+    )
 
 
 # Entities
